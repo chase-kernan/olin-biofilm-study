@@ -3,9 +3,9 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from model.experiments import Experiment, from_plan
+from model.experiments import Plan, load_plan
 
-def test_from_plan(tmpdir):
+def test_load_plan(tmpdir):
     path = tmpdir / 'plan.json'
     with path.open('w') as json_file:
         json_file.write("""{
@@ -18,27 +18,27 @@ def test_from_plan(tmpdir):
             }
         }""")
 
-    exp = from_plan(path)
-    assert exp.name == 'test_experiment'
-    assert exp.runs_per_spec == 3
-    assert exp.specs['a'] == 1
-    assert exp.specs['b'] == [3, 4]
-    assert all(exp.specs['c'] == np.arange(1, 10, 5))
+    plan = load_plan(path)
+    assert plan.name == 'test_experiment'
+    assert plan.runs_per_spec == 3
+    assert plan.specs['a'] == 1
+    assert plan.specs['b'] == [3, 4]
+    assert all(plan.specs['c'] == np.arange(1, 10, 5))
 
-def test_new_experiment():
+def test_new_plan():
     specs = { 'a': 10 }
-    exp = Experiment('my_experiment', runs_per_spec=9, specs=specs)
-    assert exp.name == 'my_experiment'
-    assert exp.runs_per_spec == 9
-    assert exp.specs == specs
+    plan = Plan('my_experiment', runs_per_spec=9, specs=specs)
+    assert plan.name == 'my_experiment'
+    assert plan.runs_per_spec == 9
+    assert plan.specs == specs
 
-def test_data_file():
-    exp = Experiment('some-exp')
+def test_experiment_file():
+    exp = Plan('some-exp')
     root = Path('root')
-    assert exp.data_file(root) == root/'some-exp.hdf5'
+    assert exp.experiment_file(root) == root/'some-exp.hdf5'
 
 def test_expanded_specs():
-    expanded = Experiment(specs=dict(
+    expanded = Plan(specs=dict(
         a=1,
         b=[3, 4, 5],
         c=[6, 7],
