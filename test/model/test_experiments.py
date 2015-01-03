@@ -1,3 +1,5 @@
+import pytest
+
 from pathlib import Path
 
 import pandas as pd
@@ -72,4 +74,18 @@ def test_create_specs_expanded_specs():
         (1, 5, 6),
         (1, 5, 7),
     }
+
+@pytest.fixture
+def store(tmpdir):
+    return pd.HDFStore(str(tmpdir/'test-store.hdf5'))
+
+def test_run_create_specs(store):
+    step = CreateSpecs(a=1, b=np.arange(10))
+
+    assert not step.complete(store)
+    step.run(store)
+    assert step.complete(store)
+
+    assert all(store['specs']['a'] == np.ones(10))
+    assert all(store['specs']['b'] == np.arange(10))
 
