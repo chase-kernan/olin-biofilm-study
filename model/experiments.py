@@ -64,15 +64,32 @@ class CreateSpecs:
 register_step(CreateSpecs)
 
 
+def run_model(spec):
+    return []
+
 class RunModels:
     def __init__(self, runs_per_spec=5):
         self.runs_per_spec = runs_per_spec
 
+    def table(self, store):
+        return None
+
+    def remaining(self, store):
+        table = self.table(store)
+        for index, spec in store['specs'].iterrows():
+            num_runs = (table['spec_index'] == index).sum()
+            yield index, spec, self.runs_per_spec - num_runs
+
     def complete(self, store):
-        return False
+        return 'models' in store \
+            and all(num_rem == 0 for i, spec, num_rem in self.remaining(store))
     
     def run(self, store):
-        pass
+        table = self.table(store)
+        for i, spec, num_rem in self.remaining():
+            for _ in range(num_rem):
+                result = run_model(spec)
+                table.append({ 'spec_index': i, 'result': result })
 register_step(RunModels)
 
 
